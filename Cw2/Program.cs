@@ -8,66 +8,66 @@
 
         public class Program
         {
-            public static void Main(string[] args)
+        static string log;
+        public static void Main(string[] args)
+        {
+            log = "";
+            string pathin;
+            string pathout;
+            string pathlog = @"log.txt";
+            if (args.Length > 1)
             {
-                In();
-
-                //Wczytywanie 
-                //var fi = new FileInfo(path);
-                //using (var stream = new StreamReader(fi.OpenRead()))
-                //{
-                //    string line = null;
-                //    while ((line = stream.ReadLine()) != null)
-                //    {
-                //        string[] kolumny = line.Split(',');
-                //        Console.WriteLine(line);
-                //    }
-                //}
-                ////stream.Dispose();
-
-                ////XML
-                //var list = new List<Student>();
-                //var st = new Student
-                //{
-                //    Imie = "Jan",
-                //    Nazwisko = "Kowalski",
-                //    Email = "kowalski@wp.pl"
-                //};
-                //list.Add(st);
-
-                //FileStream writer = new FileStream(@"data.xml", FileMode.Create);
-                //XmlSerializer serializer = new XmlSerializer(typeof(List<Student>),
-                //                           new XmlRootAttribute("uczelnia"));
-                //serializer.Serialize(writer, list);
-                //serializer.Serialize(writer, list);
+                pathin = args[0];
+                pathout = args[1];
 
             }
+            else {
+                pathin = @"data.csv";
+                pathout = @"result.xml";
+            }
 
-            public static void In() {
+            try { var students = In(pathin);
+                string date = DateTime.Today.ToShortDateString();
+                string rattr = $"uczelnia\ncreated at: {date}\nauthor:Jan Przystał";
+                Uczelnia uczelnia = new Uczelnia(date,"Jan Przystał",students);
+                FileStream writer = new FileStream(pathout, FileMode.Create);
+                XmlSerializer serializer = new XmlSerializer(typeof(Uczelnia));
+                serializer.Serialize(writer, uczelnia);
+            }catch(ArgumentException e)
+            {
+                writeLog("Podana ścieżka jest niepoprawna");
+            }catch (FileNotFoundException e)
+            {
+                writeLog("Plik nazwa nie istnieje");
+            }
+            System.IO.File.WriteAllText(pathlog, log);
+        }
+
+            public static List<Student> In(string path) {
                 try
                 {
-                    string path = @"C:\Users\xinox\Desktop\sql\APBD\GitHub\Cw2\Cw2\Data\dane.csv";
                     var lines = File.ReadLines(path);
                     HashSet<Student> students = new HashSet<Student>(new OwnComparer());
                     foreach (string s in lines)
                     {
                     students.Add(new Student(s.Split(",")));
                     }
-                    Console.WriteLine(students.Count);
-            } catch (Exception e)
+                    foreach (Student s in students)
                 {
-                    Console.WriteLine(e);
+                    Console.WriteLine(s.toString());
                 }
-            
+                    return new List<Student>(students);
+                } catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                   }
+            return new List<Student>();
             }
 
             public static void writeLog(string msg)
             {
-                Console.WriteLine("log");
+                log += msg + "\n";
             }
 
         }
     }
-//var today = DateTime.Today
-//today.ToShortDateString()
-//StringComparer.InvariantCultureIgnoreCase.GetGashCode($"{student.Firstname} {student.lastname} ...
